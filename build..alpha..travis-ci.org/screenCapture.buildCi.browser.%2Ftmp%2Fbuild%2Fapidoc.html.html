@@ -1,0 +1,155 @@
+<html><head></head><body><div class="apidocDiv">
+<style>
+/*csslint
+*/
+.apidocDiv {
+    background: #fff;
+    font-family: Arial, Helvetica, sans-serif;
+}
+.apidocDiv a[href] {
+    color: #33f;
+    font-weight: bold;
+    text-decoration: none;
+}
+.apidocDiv a[href]:hover {
+    text-decoration: underline;
+}
+.apidocCodeCommentSpan {
+    background: #bbf;
+    color: #000;
+    display: block;
+}
+.apidocCodeKeywordSpan {
+    color: #d00;
+    font-weight: bold;
+}
+.apidocCodePre {
+    background: #eef;
+    border: 1px solid;
+    color: #777;
+    padding: 5px;
+    white-space: pre-wrap;
+}
+.apidocFooterDiv {
+    margin-top: 20px;
+    text-align: center;
+}
+.apidocModuleLi {
+    margin-top: 10px;
+}
+.apidocSectionDiv {
+    border-top: 1px solid;
+    margin-top: 20px;
+}
+.apidocSignatureSpan {
+    color: #777;
+    font-weight: bold;
+}
+</style>
+<h1>api documentation for
+    <a href="https://github.com/henrikjoreteg/fixpack">fixpack (v2.3.1)</a>
+</h1>
+<h4>cli tool that cleans up package.json files.</h4>
+<div class="apidocSectionDiv"><a href="#apidoc.tableOfContents" id="apidoc.tableOfContents"><h1>table of contents</h1></a><ol>
+
+    <li class="apidocModuleLi"><a href="#apidoc.module.fixpack">module fixpack</a><ol>
+
+        <li>
+
+            <a class="apidocElementLiA" href="#apidoc.element.fixpack.fixpack">
+            function <span class="apidocSignatureSpan"></span>fixpack
+            <span class="apidocSignatureSpan">(file, config)</span>
+            </a>
+
+        </li>
+
+    </ol></li>
+
+</ol></div>
+
+<div class="apidocSectionDiv">
+<h1><a href="#apidoc.module.fixpack" id="apidoc.module.fixpack">module fixpack</a></h1>
+
+
+    <h2>
+        <a href="#apidoc.element.fixpack.fixpack" id="apidoc.element.fixpack.fixpack">
+        function <span class="apidocSignatureSpan"></span>fixpack
+        <span class="apidocSignatureSpan">(file, config)</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">fixpack = function (file, config) {
+  config = extend(defaultConfig, config || {})
+  if (!fs.existsSync(file)) {
+    if (!config.quiet) console.log(('No such file: ' + file).red)
+    process.exit(1)
+  }
+  config.fileName = path.basename(file)
+  var original = fs.readFileSync(file, {encoding: 'utf8'})
+  var pack = ALCE.parse(original)
+  var out = {}
+  var outputString = ''
+  var key
+
+  // make sure we have everything
+  checkMissing(pack, config)
+
+  // handle the specific ones we want, then remove
+  config.sortToTop.forEach(function (key) {
+    if (pack[key]) out[key] = pack[key]
+    delete pack[key]
+  })
+
+  // sort the remaining
+  pack = sortAlphabetically(pack)
+
+  // add in the sorted ones
+  for (key in pack) {
+    out[key] = pack[key]
+  }
+
+  // sometimes people use a string rather than an array for the `keywords`
+  // field when there is only one item listed
+  if (typeof out.keywords === 'string') out.keywords = [out.keywords]
+
+  // sort some sub items alphabetically
+  config.sortedSubItems.forEach(function (key) {
+    if (out[key]) out[key] = sortAlphabetically(out[key])
+  })
+
+  // wipe version numbers
+  if (config.wipe) {
+    var versionedKeys = ['dependencies', 'devDependencies', 'peerDependencies', 'optionalDependencies']
+    versionedKeys.forEach(function (key) {
+      const depGroup = out[key]
+      if (depGroup) {
+        for (var item in depGroup) {
+          depGroup[item] = '*'
+        }
+      }
+    })
+  }
+
+  // write it out
+  outputString = JSON.stringify(out, null, 2) + '\n'
+
+  if (outputString !== original) {
+    fs.writeFileSync(file, outputString, {encoding: 'utf8'})
+    if (!config.quiet) console.log(config.fileName.bold + ' fixed'.green + '!')
+  } else {
+    if (!config.quiet) console.log(config.fileName.bold + ' already clean'.green + '!')
+  }
+}</pre></li>
+    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    </ul>
+
+
+</div>
+
+<div class="apidocFooterDiv">
+    [ this document was created with
+    <a href="https://github.com/kaizhu256/node-utility2" target="_blank">utility2</a>
+    ]
+</div>
+</div>
+</body></html>
